@@ -1,6 +1,7 @@
 require("dotenv").config();
 const port = process.env.SERVER_PORT || 4001;
-const mongodbAtlasURL = process.env.MONGO_DB_ATLAS_URL;
+const mongodbAtlasURL = process.env.MONGO_DB_ATLAS_URL
+
 const jwtSecretKey =
   process.env.JWT_SECRET_KEY ||
   "NVc20f8mYMGqbOTgKHkdi6uE2yri5Vkeaei5hKDVEZnSTyBgNB";

@@ -1,6 +1,6 @@
 const express = require("express");
 const upload = require("../middlewares/multer");
-const { handleAddProduct } = require("../controllers/productController");
+const { handleAddProduct, handleGetAllProducts } = require("../controllers/productController");
 
 const productRouter = express.Router();
 
@@ -13,4 +13,5 @@ productRouter.post(
   handleAddProduct
 );
 
+productRouter.get('/list',handleGetAllProducts)
 module.exports = productRouter;
