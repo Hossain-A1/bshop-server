@@ -7,6 +7,12 @@ const productSchema = new Schema(
       required: true,
       trim: true,
     },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+    },
 
     desc: {
       type: String,
@@ -23,11 +29,11 @@ const productSchema = new Schema(
     },
     sold: {
       type: Number,
-      default: 0,
+      required: true,
     },
     stock: {
       type: Number,
-      default: 0,
+      required: true,
     },
     price: {
       type: Number,

@@ -1,13 +1,24 @@
+const slugfy = require("slugify");
 const cloudinary = require("../config/cloudinary");
 const productModel = require("../models/productModel");
 const { errorResponse, successResponse } = require("./resController");
 //create product-----------
 const handleAddProduct = async (req, res, next) => {
   try {
-    const { title, desc, category, brand, price, sizes, color } = req.body;
+    const { title,desc, sold, stock, category, brand, price, sizes, color } =
+      req.body;
 
     // Validate required fields
-    if (!title || !desc || !category || !price || !sizes || !color) {
+    if (
+      !title ||
+      !desc ||
+      !sold ||
+      !stock ||
+      !category ||
+      !price ||
+      !sizes ||
+      !color
+    ) {
       return errorResponse(res, {
         statusCode: 400,
         message: "Please provide all required fields",
@@ -24,7 +35,9 @@ const handleAddProduct = async (req, res, next) => {
 
     // Handle file uploads
     const uploadedImages = req.files.images ? req.files.images : [];
-    const uploadedColorImages = req.files.colorImages ? req.files.colorImages : [];
+    const uploadedColorImages = req.files.colorImages
+      ? req.files.colorImages
+      : [];
 
     if (uploadedImages.length === 0 || uploadedColorImages.length === 0) {
       return errorResponse(res, {
@@ -54,20 +67,25 @@ const handleAddProduct = async (req, res, next) => {
       })
     );
 
-
     //if exist
-    const productExisted = await productModel.exists({title:title})
+    const productExisted = await productModel.exists({ title: title });
 
-    if(productExisted){
-      return errorResponse(res,{statusCode:409,message:"Product has in database! try another product."})
+    if (productExisted) {
+      return errorResponse(res, {
+        statusCode: 409,
+        message: "Product has in database! try another product.",
+      });
     }
 
     // Prepare product data
     const productData = {
       title,
+      slug:slugfy(title),
       desc,
+      sold,
+      stock,
       category,
-      brand: brand || "", // Optional field
+      brand: brand || "", //
       price: Number(price),
       sizes: Array.isArray(sizes) ? sizes : JSON.parse(sizes),
       color: Array.isArray(color) ? color : JSON.parse(color),
@@ -95,18 +113,21 @@ const handleAddProduct = async (req, res, next) => {
   }
 };
 
-//get all product -----------------
+
+// Get all products with search, pagination, and sorting
 const handleGetAllProducts = async (req, res, next) => {
   try {
     const search = req.query.search || "";
     const searchRegExp = new RegExp(".*" + search + ".*", "i");
 
-    const load = parseInt(req.query.load) || 0;
-    const limit = parseInt(req.query.limit) || 30;
+    const load = parseInt(req.query.load) || 1;
+    const limit = parseInt(req.query.limit) || 1;
 
-    const filter = {
-      $or: [{ name: { $regex: searchRegExp } }],
-    };
+    const filter = search
+      ? {
+          $or: [{ title: { $regex: searchRegExp } }],
+        }
+      : {};
 
     const products = await productModel
       .find(filter)
@@ -114,23 +135,24 @@ const handleGetAllProducts = async (req, res, next) => {
       .limit(limit)
       .sort({ createdAt: -1 });
 
-      if (!products) {
-        throw createHttpError(404, "Products not found");
-      }
-      const countProducts = await productModel.find({}).countDocuments();
-    //usccess response
-    return successResponse(res, {
+    if (!products || products.length === 0) {
+      return res.status(404).json({
+        statusCode: 404,
+        message: "Products not found",
+      });
+    }
+
+    const countProducts = await productModel.countDocuments(filter);
+
+    return res.status(200).json({
       statusCode: 200,
-      message: "Products was returned successfully",
+      message: "Products fetched successfully",
       payload: {
         products,
-        loadation: {
-          totalLoad: Math.ceil(countProducts / limit),
-          currentLoad: load,
-          loadPage:
-            load + 1 <= Math.ceil(countProducts / limit) ? load + 1 : null,
-          totalNumberOfProducts: countProducts,
-        },
+        totalLoad: Math.ceil(countProducts / limit),
+        currentLoad: load,
+        loadPage: load  <= Math.ceil(countProducts / limit) ? load + 1 : null,
+        totalNumberOfProducts: countProducts,
       },
     });
   } catch (error) {
@@ -138,4 +160,6 @@ const handleGetAllProducts = async (req, res, next) => {
   }
 };
 
-module.exports = { handleAddProduct,handleGetAllProducts };
+module.exports = { handleGetAllProducts };
+
+module.exports = { handleAddProduct, handleGetAllProducts };
