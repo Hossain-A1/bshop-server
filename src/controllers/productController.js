@@ -5,7 +5,7 @@ const { errorResponse, successResponse } = require("./resController");
 //create product-----------
 const handleAddProduct = async (req, res, next) => {
   try {
-    const { title,desc, sold, stock, category, brand, price, sizes, color } =
+    const { title, desc, sold, stock, category, brand, price, sizes, color } =
       req.body;
 
     // Validate required fields
@@ -80,7 +80,7 @@ const handleAddProduct = async (req, res, next) => {
     // Prepare product data
     const productData = {
       title,
-      slug:slugfy(title),
+      slug: slugfy(title),
       desc,
       sold,
       stock,
@@ -113,7 +113,6 @@ const handleAddProduct = async (req, res, next) => {
   }
 };
 
-
 // Get all products with search, pagination, and sorting
 const handleGetAllProducts = async (req, res, next) => {
   try {
@@ -121,7 +120,7 @@ const handleGetAllProducts = async (req, res, next) => {
     const searchRegExp = new RegExp(".*" + search + ".*", "i");
 
     const load = parseInt(req.query.load) || 1;
-    const limit = parseInt(req.query.limit) || 1;
+    const limit = parseInt(req.query.limit) || 10;
 
     const filter = search
       ? {
@@ -151,7 +150,7 @@ const handleGetAllProducts = async (req, res, next) => {
         products,
         totalLoad: Math.ceil(countProducts / limit),
         currentLoad: load,
-        loadPage: load  <= Math.ceil(countProducts / limit) ? load + 1 : null,
+        loadPage: load <= Math.ceil(countProducts / limit) ? load + 1 : null,
         totalNumberOfProducts: countProducts,
       },
     });
@@ -160,6 +159,31 @@ const handleGetAllProducts = async (req, res, next) => {
   }
 };
 
-module.exports = { handleGetAllProducts };
+// Get Single Product by Slug
+ const handleGetSingleProductBySlug = async (req, res, next) => {
+  try {
+    const { slug } = req.params;
+    const product = await productModel.findOne({ slug });
 
-module.exports = { handleAddProduct, handleGetAllProducts };
+    if (!product) {
+      return errorResponse(res, {
+        statusCode: 404,
+        message: "Product not found",
+      });
+    }
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: "Product was returned successfully",
+      payload:product
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  handleAddProduct,
+  handleGetAllProducts,
+  handleGetSingleProductBySlug,
+};

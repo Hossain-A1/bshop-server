@@ -8,12 +8,13 @@ const cors = require("cors");
 const { errorResponse } = require("./controllers/resController");
 const productRouter = require("./routes/productRoute");
 const  userRouter  = require("./routes/userRoute");
+const addressRoute = require("./routes/addressRoute");
 
 const app = express();
 
 const rateLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, //1 minute
-  max: 20,
+  max: 30,
   message: "Too many rquest from this api please try again after 1 minute",
 });
 
@@ -32,6 +33,7 @@ app.get("/", (req, res) => {
 //bypass all routes
 app.use("/api/product", productRouter);
 app.use("/api/auth", userRouter);
+app.use("/api/area", addressRoute);
 
 // client error
 app.use((req, res) => {

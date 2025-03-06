@@ -44,7 +44,7 @@ const handleRegister = async (req, res, next) => {
     return successResponse(res, {
       statusCode: 201,
       message: "User created successfully",
-      payload: token,
+      payload: {token,name:user.name},
     });
   } catch (error) {
     next(error);
@@ -78,7 +78,7 @@ const handleLogin = async (req, res, next) => {
     return successResponse(res, {
       statusCode: 201,
       message: "User login successfully",
-      payload: token,
+      payload: {token,name:existEmail.name},
     });
   } catch (error) {
     next(error);
