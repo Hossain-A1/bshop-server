@@ -3,35 +3,41 @@ const divisionModel = require("../models/divisionModel");
 const { errorResponse, successResponse } = require("./resController");
 const districtsModel = require("../models/districtsModel");
 const upazilaModel = require("../models/upzillaModel");
+const unionModel = require("../models/unionModel");
 
 const handleGetUserAddress = async (req, res, next) => {
   try {
-    const division = await divisionModel.find({});
-    if (!division) {
+    // Fetch all data in parallel
+    const [divisions, districts, upazilas, unions] = await Promise.all([
+      divisionModel.find({}),
+      districtsModel.find({}),
+      upazilaModel.find({}),
+      unionModel.find({}),
+    ]);
+
+    // Check if any of the arrays are empty
+    if (
+      divisions.length === 0 ||
+      districts.length === 0 ||
+      upazilas.length === 0 ||
+      unions.length === 0
+    ) {
       return errorResponse(res, {
         statusCode: 404,
-        message: "Division not found",
-      });
-    }
-    const districts = await districtsModel.find({});
-    if (!districts) {
-      return errorResponse(res, {
-        statusCode: 404,
-        message: "Districts not found",
-      });
-    }
-    const upazilas = await upazilaModel.find({});
-    if (!upazilas) {
-      return errorResponse(res, {
-        statusCode: 404,
-        message: "Upazilas not found",
+        message: "Address data not found",
       });
     }
 
+    // Return the response with all the data
     return successResponse(res, {
       statusCode: 200,
-      message: "Address found",
-      payload: { division, districts ,upazilas},
+      message: "Address data found",
+      payload: {
+        divisions: divisions,
+        districts: districts,
+        upazilas: upazilas,
+        unions: unions,
+      },
     });
   } catch (error) {
     next(error);
