@@ -44,7 +44,7 @@ const handleRegister = async (req, res, next) => {
     return successResponse(res, {
       statusCode: 201,
       message: "User created successfully",
-      payload: {token,name:user.name},
+      payload: { token, name: user.name },
     });
   } catch (error) {
     next(error);
@@ -78,7 +78,7 @@ const handleLogin = async (req, res, next) => {
     return successResponse(res, {
       statusCode: 201,
       message: "User login successfully",
-      payload: {token,name:existEmail.name},
+      payload: { token, name: existEmail.name },
     });
   } catch (error) {
     next(error);
@@ -107,4 +107,23 @@ const handleLogin = async (req, res, next) => {
 //   }
 // };
 
-module.exports = { handleRegister, handleLogin };
+const handleGetUser = async (req, res, next) => {
+  try {
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return errorResponse(res, {
+        statusCode: 404,
+        message: "user not found in bd",
+      });
+    }
+    return successResponse(res, {
+      statusCode: 200,
+      message: "user found",
+      payload: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { handleRegister, handleLogin,handleGetUser };

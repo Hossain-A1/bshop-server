@@ -9,6 +9,8 @@ const { errorResponse } = require("./controllers/resController");
 const productRouter = require("./routes/productRoute");
 const  userRouter  = require("./routes/userRoute");
 const addressRoute = require("./routes/addressRoute");
+const bikashRoute = require("./routes/bikashRoute");
+const cartRouter = require("./routes/cartRoute");
 
 const app = express();
 
@@ -34,6 +36,8 @@ app.get("/", (req, res) => {
 app.use("/api/product", productRouter);
 app.use("/api/auth", userRouter);
 app.use("/api/area", addressRoute);
+app.use("/api/cart", cartRouter);
+app.use("/api/bkash", bikashRoute);
 
 // client error
 app.use((req, res) => {

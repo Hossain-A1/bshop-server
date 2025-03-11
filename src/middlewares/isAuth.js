@@ -1,5 +1,6 @@
 const createError = require("../helpers/createError");
 const { verifyToken } = require("../helpers/jsonwebtoken");
+const { jwtSecretKey } = require("../secret");
 
 const isAuthorized = async (req, res, next) => {
   try {
