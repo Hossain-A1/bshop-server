@@ -15,6 +15,10 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    address: {
+      type: Object,
+      default: {},
+    },
     cartItem: {
       type: Object,
       default: {},

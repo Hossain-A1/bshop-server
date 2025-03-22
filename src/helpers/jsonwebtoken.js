@@ -4,7 +4,7 @@ const createError = require("./createError");
 
 const createToken = (id) => {
   try {
-    const token = jwt.sign({ id }, jwtSecretKey, { expiresIn: "30m" });
+    const token = jwt.sign({ id }, jwtSecretKey, { expiresIn: "7d" });
     return token;
   } catch (error) {
     throw createError(500, `Token creation failed: ${error.message}`);

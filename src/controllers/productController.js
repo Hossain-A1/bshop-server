@@ -25,6 +25,7 @@ const handleAddProduct = async (req, res, next) => {
       });
     }
 
+
     // Ensure files exist
     if (!req.files || (!req.files.images && !req.files.colorImages)) {
       return errorResponse(res, {
@@ -45,7 +46,16 @@ const handleAddProduct = async (req, res, next) => {
         message: "Both images and colorImages must contain at least one file",
       });
     }
+   // Parse color if it's a JSON string
+   const colorsArray = typeof color === "string" ? JSON.parse(color) : color;
 
+   // Validate the length of color and colorImages arrays
+   if (colorsArray.length !== uploadedColorImages.length) {
+     return errorResponse(res, {
+       statusCode: 400,
+       message: "The number of colors must match the number of color images",
+     });
+   }
     // Upload images to Cloudinary
     const imagesUrl = await Promise.all(
       uploadedImages.map(async (img) => {

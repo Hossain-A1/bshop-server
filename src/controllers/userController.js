@@ -44,7 +44,7 @@ const handleRegister = async (req, res, next) => {
     return successResponse(res, {
       statusCode: 201,
       message: "User created successfully",
-      payload: { token, name: user.name },
+      payload: token,
     });
   } catch (error) {
     next(error);
@@ -78,7 +78,7 @@ const handleLogin = async (req, res, next) => {
     return successResponse(res, {
       statusCode: 201,
       message: "User login successfully",
-      payload: { token, name: existEmail.name },
+      payload: token,
     });
   } catch (error) {
     next(error);
@@ -109,13 +109,15 @@ const handleLogin = async (req, res, next) => {
 
 const handleGetUser = async (req, res, next) => {
   try {
-    const user = await userModel.findOne({ email });
+    const id = req.user;
+    const user = await userModel.findById(id);
     if (!user) {
       return errorResponse(res, {
         statusCode: 404,
         message: "user not found in bd",
       });
     }
+
     return successResponse(res, {
       statusCode: 200,
       message: "user found",
@@ -126,4 +128,66 @@ const handleGetUser = async (req, res, next) => {
   }
 };
 
-module.exports = { handleRegister, handleLogin,handleGetUser };
+const handleSaveUserAddress = async (req, res, next) => {
+  try {
+    const { formData } = req.body;
+    const userId = req.user;
+
+    // Validate formData
+    if (
+      !formData ||
+      typeof formData !== "object" ||
+      Object.keys(formData).length === 0
+    ) {
+      return errorResponse(res, {
+        statusCode: 400,
+        message: "Invalid formData. It must be a non-empty object.",
+      });
+    }
+
+    // Find the user
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return errorResponse(res, {
+        statusCode: 404,
+        message: "User not found in database",
+      });
+    }
+
+    // Update the address, ensuring all fields are properly set
+    const updatedUserAddress = await userModel.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          "address.fullName": formData.fullName || user.address.fullName,
+          "address.phone": formData.phone || user.address.phone,
+          "address.division": formData.division || user.address.division,
+          "address.district": formData.district || user.address.district,
+          "address.upazila": formData.upazila || user.address.upazila,
+          "address.union": formData.union || user.address.union,
+          "address.building": formData.building || user.address.building,
+          "address.landmark": formData.landmark || user.address.landmark,
+          "address.address": formData.address || user.address.address,
+        },
+      },
+      { new: true }
+    );
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: "User address updated successfully",
+      payload: updatedUserAddress,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+module.exports = {
+  handleRegister,
+  handleLogin,
+  handleGetUser,
+  handleSaveUserAddress,
+};
