@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const userModel = require("../models/userModel.js");
 const { errorResponse, successResponse } = require("./resController.js");
 const { createToken } = require("../helpers/jsonwebtoken.js");
+const verifyUser = require("../service/userService.js");
 const handleRegister = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
@@ -36,15 +37,10 @@ const handleRegister = async (req, res, next) => {
       throw new Error("User not found");
     }
 
-    //create token
-    const token = createToken(user._id);
-    if (!token) {
-      throw new Error("Token not found");
-    }
+    verifyUser(res, user);
     return successResponse(res, {
       statusCode: 201,
       message: "User created successfully",
-      payload: token,
     });
   } catch (error) {
     next(error);
@@ -55,16 +51,16 @@ const handleLogin = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const existEmail = await userModel.findOne({ email }).select("+password");
+    const user = await userModel.findOne({ email }).select("+password");
 
-    if (!existEmail) {
+    if (!user) {
       return errorResponse(res, {
         statusCode: 400,
         message: "Email not exist, Please register first!",
       });
     }
 
-    const matchPassword = await bcrypt.compare(password, existEmail.password);
+    const matchPassword = await bcrypt.compare(password, user.password);
 
     if (!matchPassword) {
       return errorResponse(res, {
@@ -73,12 +69,11 @@ const handleLogin = async (req, res, next) => {
       });
     }
 
-    const token = createToken(existEmail._id);
+    verifyUser(res, user);
 
     return successResponse(res, {
-      statusCode: 201,
+      statusCode: 200,
       message: "User login successfully",
-      payload: token,
     });
   } catch (error) {
     next(error);
@@ -114,7 +109,7 @@ const handleGetUser = async (req, res, next) => {
     if (!user) {
       return errorResponse(res, {
         statusCode: 404,
-        message: "user not found in bd",
+        message: "user not found in db",
       });
     }
 
@@ -182,8 +177,6 @@ const handleSaveUserAddress = async (req, res, next) => {
     next(error);
   }
 };
-
-
 
 module.exports = {
   handleRegister,

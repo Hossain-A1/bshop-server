@@ -5,7 +5,7 @@ const { errorResponse, successResponse } = require("./resController");
 //create product-----------
 const handleAddProduct = async (req, res, next) => {
   try {
-    const { title, desc, sold, stock, category, brand, price, sizes, color } =
+    const { title, desc, sold, stock,discount, category, brand, price, sizes, color } =
       req.body;
 
     // Validate required fields
@@ -13,6 +13,7 @@ const handleAddProduct = async (req, res, next) => {
       !title ||
       !desc ||
       !sold ||
+      !discount||
       !stock ||
       !category ||
       !price ||
@@ -94,6 +95,7 @@ const handleAddProduct = async (req, res, next) => {
       desc,
       sold,
       stock,
+      discount,
       category,
       brand: brand || "", //
       price: Number(price),

@@ -1,11 +1,14 @@
 const jwt = require("jsonwebtoken");
-const { jwtSecretKey } = require("../secret");
+const { jwtSecretKey, jwtReSecretKey } = require("../secret");
 const createError = require("./createError");
 
-const createToken = (id) => {
+const createToken = (payload) => {
   try {
-    const token = jwt.sign({ id }, jwtSecretKey, { expiresIn: "7d" });
-    return token;
+    const accessToken = jwt.sign(payload, jwtSecretKey, { expiresIn: "30m" });
+    const refreshToken = jwt.sign(payload, jwtReSecretKey, { expiresIn: "7d" });
+    return {
+      accessToken,refreshToken
+    }
   } catch (error) {
     throw createError(500, `Token creation failed: ${error.message}`);
   }

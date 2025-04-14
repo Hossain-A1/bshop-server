@@ -2,6 +2,8 @@ const axios = require("axios");
 const globals = require("node-global-storage");
 const { v4: uuidv4 } = require("uuid");
 const bikashModel = require("../models/bikashModel");
+const { clientURL } = require("../secret");
+const userModel = require("../models/userModel");
 
 // Helper function to generate headers
 const bkashHeaders = async () => ({
@@ -13,8 +15,9 @@ const bkashHeaders = async () => ({
 
 // Function to create a payment
 const handlePaymentCreate = async (req, res, next) => {
-  const { amount, userId } = req.body;
-  globals.setValue("userId", userId);
+  const { amount } = req.body;
+  const userId = req.user;
+  globals.setValue("userId", userId); // Store userId temporarily
 
   try {
     const response = await axios.post(
@@ -22,8 +25,8 @@ const handlePaymentCreate = async (req, res, next) => {
       {
         mode: "0011",
         payerReference: " ",
-        callbackURL: "http://localhost:4000/api/bkash/payment/callback",
-        amount: amount,
+        callbackURL: `${clientURL}/api/bkash/payment/callback`,
+        amount,
         currency: "BDT",
         intent: "sale",
         merchantInvoiceNumber: "Inv" + uuidv4().substring(0, 5),
@@ -33,7 +36,11 @@ const handlePaymentCreate = async (req, res, next) => {
       }
     );
 
-    return res.status(200).json({ bkashURL: response.data.bkashURL });
+    if (response.data.statusCode === "0000") {
+      return res.status(200).json({ bkashURL: response.data.bkashURL });
+    } else {
+      return res.status(400).json({ message: "Payment initiation failed" });
+    }
   } catch (error) {
     next(error);
   }
@@ -41,13 +48,10 @@ const handlePaymentCreate = async (req, res, next) => {
 
 // Function to handle payment callback
 const handleCallBack = async (req, res) => {
-  const { paymentID, status } = req.query;
-
-  // Define the frontend URL manually
-  const frontendURL = process.env.FRONTEND_URL || "http://localhost:3000"; 
+  const { paymentID, status, userId } = req.query; // Get userId from query
 
   if (status === "cancel" || status === "failure") {
-    return res.redirect(`${frontendURL}/cancel`);
+    return res.redirect(`${clientURL}/cancel`);
   }
 
   if (status === "success") {
@@ -61,24 +65,27 @@ const handleCallBack = async (req, res) => {
       );
 
       if (data && data.statusCode === "0000") {
+        // Save transaction in DB with correct userId
         await bikashModel.create({
-          userId: Math.random() * 10 + 1,
+          userId, // ✅ Store correct user ID
           paymentID,
           trxID: data.trxID,
           date: data.paymentExecuteTime,
           amount: parseInt(data.amount),
         });
 
-        return res.redirect(`${frontendURL}/success`);
+        // Clear the cart only after payment is successful
+        await userModel.findByIdAndUpdate(userId, { cartItem: {} });
+
+        return res.redirect(`${clientURL}/success`);
       } else {
-        return res.redirect(`${frontendURL}/error?message=${data.statusMessage}`);
+        return res.redirect(`${clientURL}/error?message=${data.statusMessage}`);
       }
     } catch (error) {
-      return res.redirect(`${frontendURL}/error?message=${error.message}`);
+      return res.redirect(`${clientURL}/error?message=${error.message}`);
     }
   }
 };
-
 
 // Function to handle refund
 const handleRefund = async (req, res, next) => {
@@ -89,7 +96,7 @@ const handleRefund = async (req, res, next) => {
     if (!payment) {
       return res.status(404).json({ error: "Transaction not found" });
     }
-    
+
     const { data } = await axios.post(
       process.env.bkash_refund_transaction_url,
       {
@@ -105,9 +112,9 @@ const handleRefund = async (req, res, next) => {
     );
 
     if (data && data.statusCode === "0000") {
-      return res.status(200).json({ message: "refund success" });
+      return res.status(200).json({ message: "Refund successful" });
     } else {
-      return res.status(404).json({ error: "refund failed" });
+      return res.status(400).json({ error: "Refund failed" }); // Fixed status code
     }
   } catch (error) {
     next(error);
