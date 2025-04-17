@@ -54,7 +54,7 @@ const handleAddProduct = async (req, res, next) => {
    if (colorsArray.length !== uploadedColorImages.length) {
      return errorResponse(res, {
        statusCode: 400,
-       message: "The number of colors must match the number of color images",
+       message: "The number of colors must match the number of colorImages",
      });
    }
     // Upload images to Cloudinary
