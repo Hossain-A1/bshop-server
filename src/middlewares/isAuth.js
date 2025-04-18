@@ -1,8 +1,9 @@
+const { errorResponse } = require("../controllers/resController");
 const createError = require("../helpers/createError");
 const { verifyToken } = require("../helpers/jsonwebtoken");
 const { jwtSecretKey } = require("../secret");
 
-const isAuthorized = async (req, res, next) => {
+const isAuthorized = async (req, _res, next) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -10,16 +11,38 @@ const isAuthorized = async (req, res, next) => {
     }
 
     const token = authHeader.split(" ")[1];
-    const decode = verifyToken(token, jwtSecretKey);
+    const tokenValue ={
+      _id:token._id,
+      name:token.name,
+      email:token.email
+    }
+    console.log(token);
+    const decode = verifyToken(tokenValue, jwtSecretKey);
     if (!decode) {
       throw createError(401, "Unauthorized: Invalid token");
     }
 
-    req.user = decode.id;
+    req.user = decode;
     next();
   } catch (error) {
     next(error);
   }
 };
 
-module.exports = isAuthorized;
+const isAdmin = async (req, res, next) => {
+  try {
+    const admin = req.user;
+    if (admin?.role === "admin") {
+      next();
+    } else {
+      return errorResponse(res, {
+        statusCode: 403,
+        message: "Access denied. Admins only.",
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {isAuthorized,isAdmin};

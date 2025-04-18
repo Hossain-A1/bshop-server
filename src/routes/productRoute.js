@@ -5,6 +5,7 @@ const {
   handleGetAllProducts,
   handleGetSingleProductBySlug,
 } = require("../controllers/productController");
+const { isAuthorized, isAdmin } = require("../middlewares/isAuth");
 
 const productRouter = express.Router();
 
@@ -14,6 +15,8 @@ productRouter.post(
     { name: "images", maxCount: 10 },
     { name: "colorImages", maxCount: 5 },
   ]),
+  isAuthorized,
+  isAdmin,
   handleAddProduct
 );
 

@@ -5,7 +5,7 @@ const {
   handleRefund,
 } = require("../controllers/bikashController");
 const bkashAuth = require("../middlewares/bikash");
-const isAuthorized = require("../middlewares/isAuth");
+const { isAuthorized } = require("../middlewares/isAuth");
 const bikashRoute = express.Router();
 
 bikashRoute.post(

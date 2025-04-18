@@ -4,9 +4,8 @@ const {
   handleLogin,
   handleGetUser,
   handleSaveUserAddress,
-  handleGetUserAddress,
 } = require("../controllers/userController");
-const isAuthorized = require("../middlewares/isAuth");
+const { isAuthorized } = require("../middlewares/isAuth");
 const userRouter = express.Router();
 
 userRouter.post("/register", handleRegister);

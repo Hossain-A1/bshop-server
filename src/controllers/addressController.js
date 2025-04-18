@@ -5,7 +5,7 @@ const districtsModel = require("../models/districtsModel");
 const upazilaModel = require("../models/upzillaModel");
 const unionModel = require("../models/unionModel");
 
-const handleGetUserAddress = async (req, res, next) => {
+const handleGetUserAddress = async (_req, res, next) => {
   try {
     // Fetch all data in parallel
     const [divisions, districts, upazilas, unions] = await Promise.all([

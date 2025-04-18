@@ -5,7 +5,7 @@ const { errorResponse, successResponse } = require("../controllers/resController
 const handleAddToCart = async (req, res, next) => {
   try {
     const { count } = req.body; 
-    const userId = req.user; 
+    const userId = req.user._id; 
 
     if (!count || typeof count !== "number" || count < 1) {
       return errorResponse(res, {
