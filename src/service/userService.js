@@ -6,6 +6,7 @@ const verifyUser = (res, user) => {
     _id: user._id,
     name: user.name,
     email: user.email,
+role:user.role,
   });
   if (!token) {
     throw new Error("Token not found");
