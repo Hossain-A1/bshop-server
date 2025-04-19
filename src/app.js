@@ -11,6 +11,7 @@ const userRouter = require("./routes/userRoute");
 const addressRoute = require("./routes/addressRoute");
 const bikashRoute = require("./routes/bikashRoute");
 const cartRouter = require("./routes/cartRoute");
+const accessRouter = require("./routes/accessRoute");
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use("/api/auth", userRouter);
 app.use("/api/area", addressRoute);
 app.use("/api/cart", cartRouter);
 app.use("/api/bkash", bikashRoute);
+app.use("/api/access", accessRouter);
 
 // client error
 app.use((req, res) => {

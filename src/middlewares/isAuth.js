@@ -11,13 +11,9 @@ const isAuthorized = async (req, _res, next) => {
     }
 
     const token = authHeader.split(" ")[1];
-    const tokenValue ={
-      _id:token._id,
-      name:token.name,
-      email:token.email
-    }
+   
     console.log(token);
-    const decode = verifyToken(tokenValue, jwtSecretKey);
+    const decode = verifyToken(token, jwtSecretKey);
     if (!decode) {
       throw createError(401, "Unauthorized: Invalid token");
     }

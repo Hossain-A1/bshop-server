@@ -21,5 +21,5 @@ productRouter.post(
 );
 
 productRouter.get("/list", handleGetAllProducts);
-productRouter.get("/slug/:slug", handleGetSingleProductBySlug);
+productRouter.get("/slug/:slug",  handleGetSingleProductBySlug);
 module.exports = productRouter;
