@@ -11,13 +11,9 @@ const isAuthorized = async (req, _res, next) => {
     }
 
     const token = authHeader.split(" ")[1];
-   
-    console.log(token);
-<<<<<<< HEAD
+
     const decode = verifyToken(token, jwtSecretKey);
-=======
-    const decode = verifyToken(token);
->>>>>>> de912f29dcb2acedad0a21e91c984e28d3572205
+
     if (!decode) {
       throw createError(401, "Unauthorized: Invalid token");
     }
@@ -45,4 +41,4 @@ const isAdmin = async (req, res, next) => {
   }
 };
 
-module.exports = {isAuthorized,isAdmin};
+module.exports = { isAuthorized, isAdmin };

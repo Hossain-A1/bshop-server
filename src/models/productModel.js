@@ -41,8 +41,8 @@ const productSchema = new Schema(
     },
     discount: {
       type: Number,
-      required: true
-  },
+      required: true,
+    },
     sizes: {
       type: [String],
       required: true,

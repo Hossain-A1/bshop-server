@@ -5,15 +5,25 @@ const { errorResponse, successResponse } = require("./resController");
 //create product-----------
 const handleAddProduct = async (req, res, next) => {
   try {
-    const { title, desc, sold, stock,discount, category, brand, price, sizes, color } =
-      req.body;
+    const {
+      title,
+      desc,
+      sold,
+      stock,
+      discount,
+      category,
+      brand,
+      price,
+      sizes,
+      color,
+    } = req.body;
 
     // Validate required fields
     if (
       !title ||
       !desc ||
       !sold ||
-      !discount||
+      !discount ||
       !stock ||
       !category ||
       !price ||
@@ -25,7 +35,6 @@ const handleAddProduct = async (req, res, next) => {
         message: "Please provide all required fields",
       });
     }
-
 
     // Ensure files exist
     if (!req.files || (!req.files.images && !req.files.colorImages)) {
@@ -47,16 +56,16 @@ const handleAddProduct = async (req, res, next) => {
         message: "Both images and colorImages must contain at least one file",
       });
     }
-   // Parse color if it's a JSON string
-   const colorsArray = typeof color === "string" ? JSON.parse(color) : color;
+    // Parse color if it's a JSON string
+    const colorsArray = typeof color === "string" ? JSON.parse(color) : color;
 
-   // Validate the length of color and colorImages arrays
-   if (colorsArray.length !== uploadedColorImages.length) {
-     return errorResponse(res, {
-       statusCode: 400,
-       message: "The number of colors must match the number of colorImages",
-     });
-   }
+    // Validate the length of color and colorImages arrays
+    if (colorsArray.length !== uploadedColorImages.length) {
+      return errorResponse(res, {
+        statusCode: 400,
+        message: "The number of colors must match the number of colorImages",
+      });
+    }
     // Upload images to Cloudinary
     const imagesUrl = await Promise.all(
       uploadedImages.map(async (img) => {
@@ -136,7 +145,14 @@ const handleGetAllProducts = async (req, res, next) => {
 
     const filter = search
       ? {
-          $or: [{ title: { $regex: searchRegExp } }],
+          $or: [
+            {
+              title: { $regex: searchRegExp },
+            },
+            {
+              category: { $regex: searchRegExp },
+            },
+          ],
         }
       : {};
 
@@ -172,7 +188,7 @@ const handleGetAllProducts = async (req, res, next) => {
 };
 
 // Get Single Product by Slug
- const handleGetSingleProductBySlug = async (req, res, next) => {
+const handleGetSingleProductBySlug = async (req, res, next) => {
   try {
     const { slug } = req.params;
     const product = await productModel.findOne({ slug });
@@ -187,7 +203,7 @@ const handleGetAllProducts = async (req, res, next) => {
     return successResponse(res, {
       statusCode: 200,
       message: "Product was returned successfully",
-      payload:product
+      payload: product,
     });
   } catch (error) {
     next(error);

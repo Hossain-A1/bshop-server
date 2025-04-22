@@ -80,27 +80,47 @@ const handleLogin = async (req, res, next) => {
   }
 };
 
-// const handleAdminLogin = async (req, res, next) => {
-//   try {
-//     const { email, password } = req.body;
-//     if (email === adminEmail && password === adminPassword) {
-//       const token = jwt.sign(email + password, jwtSecret);
+const handleforgetPassword = async (req, res, next) => {
+  try {
+    const { email, password, confirmPassword } = req.body;
+    console.log(password);
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return errorResponse(res, {
+        statusCode: 404,
+        message: "You did not register with this email.",
+      });
+    }
 
-//       return successResponse(res, {
-//         statusCode: 200,
-//         message: "Admin was login successfully",
-//         payload: token,
-//       });
-//     } else {
-//       errorResponse(res, {
-//         statusCode: 400,
-//         message: "Admin login failed",
-//       });
-//     }
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+    if (password !== confirmPassword) {
+      return errorResponse(res, {
+        statusCode: 400,
+        message: "Password not match.",
+      });
+    }
+
+    if (!validator.isStrongPassword(password)) {
+      return errorResponse(res, {
+        statusCode: 400,
+        message:
+          "Password must be 8char+ long with one uppercase lowercase and symbol",
+      });
+    }
+
+    const hashPassword = await bcrypt.hash(password, 10);
+
+    user.password = hashPassword;
+
+    verifyUser(res, user);
+    user.save();
+    return successResponse(res, {
+      statusCode: 200,
+      message: "Password was successfull",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 const handleGetUser = async (req, res, next) => {
   try {
@@ -183,4 +203,5 @@ module.exports = {
   handleLogin,
   handleGetUser,
   handleSaveUserAddress,
+  handleforgetPassword,
 };
